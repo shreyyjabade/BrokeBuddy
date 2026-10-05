@@ -1,0 +1,715 @@
+:root {
+    --bg: #f5f5f2;
+    --card: rgba(255,255,255,.86);
+    --text: #171717;
+    --muted: #777;
+    --border: #e8e8e3;
+    --green: #b7f34a;
+    --green-dark: #78a928;
+    --pink: #ffc9dd;
+    --yellow: #ffe4a8;
+    --red: #ffc8c8;
+    --shadow: 0 15px 45px rgba(0,0,0,.06);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "DM Sans", sans-serif;
+    background:
+        radial-gradient(
+            circle at 10% 10%,
+            #e9ffd0 0,
+            transparent 25%
+        ),
+        radial-gradient(
+            circle at 90% 20%,
+            #e7dbff 0,
+            transparent 25%
+        ),
+        var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 12px 13px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: #fafaf8;
+    outline: none;
+    color: var(--text);
+}
+
+input:focus,
+select:focus {
+    border-color: #171717;
+}
+
+.app {
+    width: min(1120px, 94%);
+    margin: auto;
+    padding: 24px 0 45px;
+}
+
+
+/* ================= NAV ================= */
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    background: var(--green);
+    border-radius: 13px;
+    font-size: 1.25rem;
+    box-shadow: 5px 5px 0 #222;
+}
+
+.logo strong {
+    display: block;
+    font-family: "Space Grotesk";
+    font-size: 1.15rem;
+}
+
+.logo small {
+    display: block;
+    color: var(--muted);
+    font-size: .72rem;
+}
+
+.reset-btn {
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,.7);
+    padding: 9px 14px;
+    border-radius: 12px;
+}
+
+
+/* ================= HERO ================= */
+
+.hero {
+    min-height: 270px;
+    background: #171717;
+    color: white;
+    border-radius: 28px;
+    padding: 38px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.green-circle {
+    position: absolute;
+    width: 265px;
+    height: 265px;
+    background: var(--green);
+    border-radius: 50%;
+    right: 90px;
+    top: -135px;
+}
+
+.hero-text {
+    position: relative;
+    z-index: 2;
+}
+
+.eyebrow {
+    color: var(--green);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+}
+
+.hero h1 {
+    font-family: "Space Grotesk";
+    font-size: clamp(2.8rem, 6vw, 4.5rem);
+    line-height: .94;
+    letter-spacing: -2px;
+    margin: 10px 0 18px;
+}
+
+.hero p {
+    color: #c8c8c8;
+    font-size: .95rem;
+}
+
+
+/* ================= PINK BUDDY ================= */
+
+.buddy-card {
+    position: absolute;
+    right: 42px;
+    bottom: 35px;
+    z-index: 4;
+
+    width: 136px;
+    height: 136px;
+
+    background: var(--pink);
+    color: #171717;
+
+    border: 2px solid #171717;
+    border-radius: 50%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+    transform: rotate(5deg);
+
+    box-shadow: 7px 7px 0 white;
+}
+
+.eyes {
+    font-size: 2.3rem;
+    margin-bottom: 5px;
+}
+
+.buddy-card strong {
+    font-family: "Space Grotesk";
+    font-size: .7rem;
+    line-height: .95;
+    transform: rotate(-5deg);
+}
+
+
+/* ================= CARDS ================= */
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 23px;
+    box-shadow: var(--shadow);
+}
+
+.label {
+    color: var(--muted);
+    font-size: .67rem;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+}
+
+.card h2 {
+    font-family: "Space Grotesk";
+    font-size: 1.35rem;
+    margin-top: 4px;
+}
+
+.tag {
+    background: #efeee9;
+    color: #686760;
+    padding: 5px 9px;
+    border-radius: 30px;
+    font-size: .67rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.card-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 13px;
+}
+
+
+/* ================= BUDGET ================= */
+
+.budget-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 16px;
+}
+
+.budget-card h2 {
+    font-family: "Space Grotesk";
+    font-size: 2rem;
+    margin-top: 5px;
+}
+
+.budget-control {
+    display: flex;
+    gap: 8px;
+    width: 330px;
+}
+
+.budget-control button {
+    border: none;
+    background: var(--green);
+    padding: 0 17px;
+    border-radius: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+
+/* ================= STATS ================= */
+
+.stats {
+    display: grid;
+    grid-template-columns: 1.3fr .7fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.big-money {
+    font-family: "Space Grotesk";
+    font-size: 2.3rem;
+    margin: 8px 0 12px;
+}
+
+.progress,
+.goal-bar {
+    height: 9px;
+    background: #e9e7e0;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.progress span,
+.goal-bar span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: #171717;
+    border-radius: inherit;
+    transition: width .3s;
+}
+
+.card small {
+    color: var(--muted);
+    font-size: .75rem;
+}
+
+.daily-card {
+    background: var(--green);
+    border-color: #171717;
+}
+
+.daily-card small {
+    color: #555d43;
+    line-height: 1.4;
+}
+
+
+/* ================= FEATURES ================= */
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.description {
+    color: var(--muted);
+    font-size: .87rem;
+    line-height: 1.45;
+    margin-bottom: 15px;
+}
+
+
+/* ================= AFFORD ================= */
+
+.checker {
+    display: flex;
+    gap: 8px;
+}
+
+.checker button {
+    border: none;
+    background: #171717;
+    color: white;
+    padding: 0 18px;
+    border-radius: 13px;
+    font-weight: 800;
+}
+
+.checker-result {
+    display: none;
+    margin-top: 12px;
+    padding: 13px;
+    border-radius: 14px;
+    font-size: .85rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.checker-result.safe {
+    display: block;
+    background: #dcffc0;
+    border: 1px solid #a9d879;
+}
+
+.checker-result.warn {
+    display: block;
+    background: var(--yellow);
+    border: 1px solid #e0c36d;
+}
+
+.checker-result.danger {
+    display: block;
+    background: var(--red);
+    border: 1px solid #ed9b9b;
+}
+
+
+/* ================= EXPENSE ================= */
+
+.expense-form {
+    display: grid;
+    grid-template-columns: 1.2fr .7fr;
+    gap: 8px;
+}
+
+.expense-form select {
+    grid-column: 1;
+}
+
+.expense-form button {
+    grid-column: 2;
+    grid-row: 2;
+    border: none;
+    background: var(--green);
+    border-radius: 13px;
+    font-weight: 800;
+}
+
+
+/* ================= GOAL ================= */
+
+.goal-inputs {
+    display: grid;
+    grid-template-columns: 1.3fr .7fr;
+    gap: 8px;
+    margin-bottom: 13px;
+}
+
+.goal-bar span {
+    background: var(--green-dark);
+}
+
+.goal-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 9px;
+    color: var(--muted);
+    font-size: .8rem;
+}
+
+.goal-bottom button {
+    border: none;
+    background: transparent;
+    font-weight: 800;
+}
+
+
+/* ================= TRANSACTIONS ================= */
+
+.transactions {
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.transaction {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.transaction:last-child {
+    border-bottom: none;
+}
+
+.transaction-name {
+    font-size: .88rem;
+    font-weight: 700;
+}
+
+.transaction-category {
+    color: var(--muted);
+    font-size: .7rem;
+    margin-top: 3px;
+}
+
+.amount {
+    font-size: .88rem;
+    font-weight: 700;
+}
+
+.delete {
+    margin-left: 7px;
+    color: #aaa;
+    background: transparent;
+    border: none;
+    font-size: 1rem;
+}
+
+.delete:hover {
+    color: #e33;
+}
+
+.empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 25px 0;
+    font-size: .85rem;
+}
+
+
+/* ================= LOGIN ================= */
+
+.login-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: grid;
+    place-items: center;
+
+    padding: 20px;
+
+    background:
+        radial-gradient(
+            circle at 10% 10%,
+            #e9ffd0 0,
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 90% 15%,
+            #e5d9ff 0,
+            transparent 28%
+        ),
+        #171717;
+}
+
+.login-box {
+    width: min(450px,100%);
+    background: #f5f5f2;
+    padding: 36px 30px;
+    border-radius: 28px;
+    text-align: center;
+    box-shadow: 8px 8px 0 var(--green);
+}
+
+.login-logo {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 17px;
+    background: var(--green);
+    border-radius: 17px;
+    font-size: 1.7rem;
+}
+
+.welcome {
+    display: block;
+    color: var(--muted);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+    margin-bottom: 9px;
+}
+
+.login-box h1 {
+    font-family: "Space Grotesk";
+    font-size: 2rem;
+    line-height: 1.05;
+    margin-bottom: 12px;
+}
+
+.login-box p {
+    color: var(--muted);
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.login-box input {
+    margin-bottom: 10px;
+}
+
+.login-box button {
+    width: 100%;
+    border: none;
+    padding: 14px;
+    background: #171717;
+    color: white;
+    border-radius: 14px;
+    font-weight: 700;
+}
+
+.login-box button:hover {
+    background: #333;
+    transform: translateY(-1px);
+}
+
+.login-box small {
+    display: block;
+    color: #999;
+    font-size: .7rem;
+    margin-top: 14px;
+}
+
+
+/* ================= FOOTER ================= */
+
+footer {
+    text-align: center;
+    color: #888;
+    font-size: .72rem;
+    margin-top: 22px;
+}
+
+
+/* ================= TOAST ================= */
+
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    transform: translate(-50%,80px);
+
+    background: #171717;
+    color: white;
+
+    padding: 11px 17px;
+    border-radius: 30px;
+
+    font-size: .8rem;
+    opacity: 0;
+
+    transition: .25s;
+    z-index: 1100;
+}
+
+.toast.show {
+    transform: translate(-50%,0);
+    opacity: 1;
+}
+
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 800px) {
+
+    .hero {
+        min-height: 330px;
+    }
+
+    .stats,
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .budget-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .budget-control {
+        width: 100%;
+    }
+
+    .buddy-card {
+        right: 25px;
+        bottom: 22px;
+    }
+
+    .green-circle {
+        right: 20px;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .app {
+        width: 94%;
+    }
+
+    .hero {
+        padding: 27px;
+    }
+
+    .hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero p {
+        max-width: 75%;
+    }
+
+    .buddy-card {
+        width: 108px;
+        height: 108px;
+    }
+
+    .eyes {
+        font-size: 1.8rem;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .budget-control,
+    .checker {
+        flex-direction: column;
+    }
+
+    .budget-control button,
+    .checker button {
+        padding: 11px;
+    }
+
+    .expense-form,
+    .goal-inputs {
+        grid-template-columns: 1fr;
+    }
+
+    .expense-form select,
+    .expense-form button {
+        grid-column: 1;
+        grid-row: auto;
+    }
+}
