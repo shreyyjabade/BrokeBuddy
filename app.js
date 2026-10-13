@@ -14,57 +14,65 @@ const defaultData = {
 };
 
 
-let data = loadData();
+let currentUser = "";
+let data = structuredClone(defaultData);
 
 
 /* ================= DATA ================= */
 
-function loadData() {
+
+function getUserDataKey(name) {
+    return "brokeBuddyData_user_" +
+        encodeURIComponent(name.trim().toLowerCase());
+}
+
+function loadData(userName) {
+    const userKey = getUserDataKey(userName);
+    let saved = localStorage.getItem(userKey);
+
+    // Preserve existing data for the first user who migrates it
+    if (!saved) {
+        const oldData = localStorage.getItem(DATA_KEY);
+
+        if (oldData) {
+            saved = oldData;
+            localStorage.setItem(userKey, oldData);
+            localStorage.removeItem(DATA_KEY);
+        }
+    }
+
+    if (!saved) {
+        return structuredClone(defaultData);
+    }
 
     try {
-
-        const saved =
-            localStorage.getItem(DATA_KEY);
-
-        if (!saved) {
-            return structuredClone(defaultData);
-        }
-
         const parsed = JSON.parse(saved);
 
         return {
             ...structuredClone(defaultData),
             ...parsed,
-
-            expenses:
-                Array.isArray(parsed.expenses)
-                    ? parsed.expenses
-                    : [],
-
+            expenses: Array.isArray(parsed.expenses)
+                ? parsed.expenses
+                : [],
             goal: {
                 ...defaultData.goal,
                 ...(parsed.goal || {})
             }
         };
-
     } catch {
-
+        localStorage.removeItem(userKey);
         return structuredClone(defaultData);
-
     }
-
 }
-
 
 function saveData() {
+    if (!currentUser) return;
 
     localStorage.setItem(
-        DATA_KEY,
+        getUserDataKey(currentUser),
         JSON.stringify(data)
     );
-
 }
-
 
 function money(amount) {
 
@@ -88,14 +96,14 @@ function getTotalSpent() {
 }
 
 
-function getRemaining() {
 
+function getRemaining() {
     return Math.max(
         Number(data.budget) -
-        getTotalSpent(),
+        getTotalSpent() -
+        (Number(data.goal.saved) || 0),
         0
     );
-
 }
 
 
@@ -142,10 +150,7 @@ function updateDashboard() {
         Number(data.budget) || 0;
 
 
-    const user =
-        localStorage.getItem(USER_KEY)
-        || "Buddy";
-
+    const user = currentUser || "Buddy";
 
     document.getElementById(
         "dashboardName"
@@ -242,123 +247,6 @@ function setBudget() {
 
 }
 
-
-/* ================= AFFORDABILITY ================= */
-
-function checkAfford() {
-
-    const amount =
-        Number(
-            document.getElementById(
-                "checkAmount"
-            ).value
-        );
-
-    const remaining =
-        getRemaining();
-
-    const result =
-        document.getElementById(
-            "checkerResult"
-        );
-
-
-    if (!amount || amount <= 0) {
-
-        result.className =
-            "checker-result danger";
-
-        result.textContent =
-            "DUDE... enter an actual amount 😭";
-
-        return;
-
-    }
-
-
-    /* MORE THAN REMAINING */
-
-    if (amount > remaining) {
-
-        result.className =
-            "checker-result danger";
-
-        result.textContent =
-            `Nope. You're short by ${
-                money(amount - remaining)
-            }. That's over your remaining budget. 💀`;
-
-        return;
-
-    }
-
-
-    /* EXACT REMAINING */
-
-    if (amount === remaining) {
-
-        result.className =
-            "checker-result danger";
-
-        result.textContent =
-            `Technically affordable, BUT this uses 100% of your remaining budget. You'll have ₹0 left. Put the card down. 👀`;
-
-        return;
-
-    }
-
-
-    const percentage =
-        (amount / remaining) * 100;
-
-
-    /* MORE THAN HALF */
-
-    if (percentage > 50) {
-
-        result.className =
-            "checker-result warn";
-
-        result.textContent =
-            `You can afford it, but it eats ${
-                Math.round(percentage)
-            }% of your remaining budget. Think twice.`;
-
-        return;
-
-    }
-
-
-    /* MEDIUM */
-
-    if (percentage > 25) {
-
-        result.className =
-            "checker-result warn";
-
-        result.textContent =
-            `You can afford it, but ${
-                Math.round(percentage)
-            }% of your remaining money is leaving the chat. 👀`;
-
-        return;
-
-    }
-
-
-    /* SAFE */
-
-    result.className =
-        "checker-result safe";
-
-    result.textContent =
-        `Looks manageable — only ${
-            Math.round(percentage)
-        }% of your remaining budget. Your wallet approves... cautiously. 😌`;
-
-}
-
-
 /* ================= ADD EXPENSE ================= */
 
 function addExpense() {
@@ -432,89 +320,145 @@ function addExpense() {
 
 }
 
+function handleHistoryFilterChange() {
+    const filter = document.getElementById("historyFilter");
+    const controls = document.getElementById("customDateControls");
+
+    if (filter && controls) {
+        controls.hidden = filter.value !== "custom";
+    }
+
+    renderTransactions();
+}
 
 /* ================= TRANSACTIONS ================= */
 
+
 function renderTransactions() {
+    const box = document.getElementById("transactions");
+    const count = document.getElementById("expenseCount");
+    const filter = document.getElementById("historyFilter");
+    const startInput = document.getElementById("historyStartDate");
+    const endInput = document.getElementById("historyEndDate");
 
-    const box =
-        document.getElementById(
-            "transactions"
-        );
+    if (!box) return;
 
+    const selectedFilter = filter ? filter.value : "all";
+    let expenses = data.expenses.slice();
+    const now = Date.now();
 
-    document.getElementById(
-        "expenseCount"
-    ).textContent =
-        data.expenses.length;
+    if (selectedFilter === "7days" || selectedFilter === "30days") {
+        const days = selectedFilter === "7days" ? 7 : 30;
+        const cutoff = now - days * 24 * 60 * 60 * 1000;
 
+        expenses = expenses.filter(expense => {
+            if (!expense.date) return false;
 
-    if (!data.expenses.length) {
+            const expenseTime = new Date(expense.date).getTime();
 
-        box.innerHTML =
-            `<div class="empty">
-                No financial damage yet.
-                Suspicious. 👀
-            </div>`;
-
-        return;
-
+            return Number.isFinite(expenseTime)
+                && expenseTime >= cutoff
+                && expenseTime <= now;
+        });
     }
 
+    if (selectedFilter === "custom") {
+        const startValue = startInput ? startInput.value : "";
+        const endValue = endInput ? endInput.value : "";
 
-    box.innerHTML =
-        data.expenses
-            .slice()
-            .reverse()
-            .slice(0, 8)
-            .map(expense => `
+        if (!startValue || !endValue) {
+            if (count) count.textContent = "0";
+            box.innerHTML = `
+                <div class="empty">
+                    Choose a start date and end date, then tap Apply. 📅
+                </div>
+            `;
+            return;
+        }
 
+        const startDate = new Date(startValue + "T00:00:00").getTime();
+        const endDate = new Date(endValue + "T23:59:59.999").getTime();
+
+        if (
+            !Number.isFinite(startDate) ||
+            !Number.isFinite(endDate) ||
+            startDate > endDate
+        ) {
+            if (count) count.textContent = "0";
+            box.innerHTML = `
+                <div class="empty">
+                    Please choose a valid date range. ✨
+                </div>
+            `;
+            return;
+        }
+
+        expenses = expenses.filter(expense => {
+            if (!expense.date) return false;
+
+            const expenseTime = new Date(expense.date).getTime();
+
+            return Number.isFinite(expenseTime)
+                && expenseTime >= startDate
+                && expenseTime <= endDate;
+        });
+    }
+
+    if (count) {
+        count.textContent = expenses.length;
+    }
+
+    if (expenses.length === 0) {
+        const message = selectedFilter === "all"
+            ? "No financial damage yet. Suspicious. 👀"
+            : "No expenses found for this period. ✨";
+
+        box.innerHTML = `<div class="empty">${message}</div>`;
+        return;
+    }
+
+    box.innerHTML = expenses
+        .sort((a, b) => {
+            const dateA = new Date(a.date || 0).getTime() || 0;
+            const dateB = new Date(b.date || 0).getTime() || 0;
+            return dateB - dateA;
+        })
+        .map(expense => {
+            const date = expense.date ? new Date(expense.date) : null;
+            const validDate = date && Number.isFinite(date.getTime());
+
+            const dateText = validDate
+                ? date.toLocaleDateString("en-IN")
+                : "Date unavailable";
+
+            return `
                 <div class="transaction">
-
                     <div>
-
                         <div class="transaction-name">
-                            ${escapeHTML(
-                                expense.name
-                            )}
+                            ${escapeHTML(String(expense.name || "Expense"))}
                         </div>
-
                         <div class="transaction-category">
-                            ${escapeHTML(
-                                expense.category
-                            )}
-                            ·
-                            ${new Date(
-                                expense.date
-                            ).toLocaleDateString(
-                                "en-IN"
-                            )}
+                            ${escapeHTML(String(expense.category || "Other"))}
+                            · ${dateText}
                         </div>
-
                     </div>
 
-                    <div>
-
+                    <div style="display:flex;align-items:center;">
                         <span class="amount">
-                            -${money(expense.amount)}
+                            -${money(Number(expense.amount) || 0)}
                         </span>
-
                         <button
                             class="delete"
-                            onclick="deleteExpense(${expense.id})"
-                        >
-                            ×
-                        </button>
-
+                            onclick="deleteExpense(${Number(expense.id)})"
+                            aria-label="Delete expense"
+                            title="Delete expense"
+                        >×</button>
                     </div>
-
                 </div>
-
-            `)
-            .join("");
-
+            `;
+        })
+        .join("");
 }
-
 
 function deleteExpense(id) {
 
@@ -524,18 +468,15 @@ function deleteExpense(id) {
                 expense.id !== id
         );
 
-
     saveData();
 
     updateDashboard();
-
 
     showToast(
         "Expense deleted. Wallet survived. ✨"
     );
 
 }
-
 
 /* ================= SAVINGS GOAL ================= */
 
@@ -639,121 +580,100 @@ function saveGoal() {
 }
 
 
+
 function addToGoal() {
-
     if (!data.goal.target) {
-
-        showToast(
-            "Set your savings goal first."
-        );
-
+        showToast("Set your savings goal first.");
         return;
-
     }
 
-
-    if (
-        data.goal.saved >=
-        data.goal.target
-    ) {
-
-        showToast(
-            "Goal complete. Character development. 🏆"
-        );
-
+    if (data.goal.saved >= data.goal.target) {
+        showToast("Goal complete. Character development. 🏆");
         return;
-
     }
 
-
-    data.goal.saved =
-        Math.min(
-            data.goal.saved + 100,
-            data.goal.target
-        );
-
-
-    saveData();
-
-    updateDashboard();
-
-
-    showToast(
-        "₹100 saved. Tiny wins count. 🫡"
+    const remaining = getRemaining();
+    const amountToSave = Math.min(
+        100,
+        data.goal.target - data.goal.saved
     );
 
-}
+    if (remaining < amountToSave) {
+        showToast("Not enough money left to set this aside. 💸");
+        return;
+    }
 
+    data.goal.saved += amountToSave;
+
+    saveData();
+    updateDashboard();
+
+    showToast(
+        `₹${amountToSave} set aside. Left to Spend updated! 💗`
+    );
+}
 
 /* ================= LOGIN ================= */
 
 function loginUser() {
-
-    const input =
-        document.getElementById(
-            "usernameInput"
-        );
-
-    const name =
-        input.value.trim();
-
+    const input = document.getElementById("usernameInput");
+    const name = input.value.trim();
 
     if (!name) {
-
         input.focus();
-
         return;
-
     }
 
+    currentUser = name;
+    localStorage.setItem(USER_KEY, name);
+    data = loadData(name);
 
-    localStorage.setItem(
-        USER_KEY,
-        name
-    );
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("app").style.display = "";
 
+    updateDashboard();
 
-    document.getElementById(
-        "dashboardName"
-    ).textContent = name;
-
-
-    document.getElementById(
-        "loginScreen"
-    ).style.display = "none";
-
-
-    showToast(
-        "Let's see what financial damage we're dealing with today. 💀"
-    );
-
+    showToast("Welcome back, " + name + "! 💸");
 }
 
+function logoutUser() {
+    const confirmed = confirm(
+        "Log out? Your saved budget and expenses will stay on this phone."
+    );
+
+    if (!confirmed) return;
+
+    localStorage.removeItem(USER_KEY);
+
+    currentUser = "";
+    data = structuredClone(defaultData);
+
+    document.getElementById("usernameInput").value = "";
+    document.getElementById("app").style.display = "none";
+    document.getElementById("loginScreen").style.display = "grid";
+
+    showToast("Logged out. Your data is still saved. 💗");
+}
 
 function checkLogin() {
+    const savedUser = localStorage.getItem(USER_KEY);
 
-    const saved =
-        localStorage.getItem(
-            USER_KEY
-        );
+    if (savedUser) {
+        currentUser = savedUser;
+        data = loadData(savedUser);
 
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("app").style.display = "";
 
-    if (saved) {
+        updateDashboard();
+    } else {
+        currentUser = "";
+        data = structuredClone(defaultData);
 
-        document.getElementById(
-            "dashboardName"
-        ).textContent =
-            saved;
-
-        document.getElementById(
-            "loginScreen"
-        ).style.display =
-            "none";
-
+        document.getElementById("loginScreen").style.display = "grid";
+        document.getElementById("app").style.display = "none";
     }
-
 }
-
 
 /* ================= RESET ================= */
 
@@ -850,21 +770,6 @@ document
         saveGoal
     );
 
-
-document
-    .getElementById("checkAmount")
-    .addEventListener(
-        "keydown",
-        event => {
-
-            if (event.key === "Enter") {
-                checkAfford();
-            }
-
-        }
-    );
-
-
 document
     .getElementById("expenseAmount")
     .addEventListener(
@@ -891,12 +796,13 @@ document
 
         }
     );
-
+    
 /* ================= START ================= */
 
 checkLogin();
 
 updateDashboard();
+
 
 /* ================= BUTTON EVENTS ================= */
 
@@ -906,9 +812,6 @@ if (loginBtn) loginBtn.addEventListener("click", loginUser);
 const budgetBtn = document.getElementById("budgetBtn");
 if (budgetBtn) budgetBtn.addEventListener("click", setBudget);
 
-const checkBtn = document.getElementById("checkBtn");
-if (checkBtn) checkBtn.addEventListener("click", checkAfford);
-
 const addExpenseBtn = document.getElementById("addExpenseBtn");
 if (addExpenseBtn) addExpenseBtn.addEventListener("click", addExpense);
 
@@ -917,52 +820,6 @@ if (saveBtn) saveBtn.addEventListener("click", saveGoal);
 
 const resetBtn = document.getElementById("resetBtn");
 if (resetBtn) resetBtn.addEventListener("click", resetApp);
-document
-    .getElementById("loginBtn")
-    .addEventListener(
-        "click",
-        loginUser
-    );
-
-document
-    .getElementById("budgetBtn")
-    .addEventListener(
-        "click",
-        setBudget
-    );
-
-
-document
-    .getElementById("checkBtn")
-    .addEventListener(
-        "click",
-        checkAfford
-    );
-
-
-document
-    .getElementById("addExpenseBtn")
-    .addEventListener(
-        "click",
-        addExpense
-    );
-
-
-document
-    .getElementById("saveBtn")
-    .addEventListener(
-        "click",
-        saveGoal
-    );
-
-
-document
-    .getElementById("resetBtn")
-    .addEventListener(
-        "click",
-        resetApp
-    );
-
 
 /* ================= EXTRA ENTER KEY SUPPORT ================= */
 

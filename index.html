@@ -71,9 +71,16 @@
 
         </div>
 
-        <button class="reset-btn" onclick="resetApp()">
-            Reset
-        </button>
+        
+<div class="nav-actions">
+    <button class="reset-btn" onclick="resetApp()">
+        Reset
+    </button>
+
+    <button class="reset-btn" onclick="logoutUser()">
+        Logout
+    </button>
+</div>
 
     </nav>
 
@@ -198,59 +205,6 @@
 
     <section class="feature-grid">
 
-
-        <!-- CAN I AFFORD -->
-
-        <div class="card">
-
-            <div class="card-heading">
-
-                <div>
-
-                    <span class="label">
-                        THE MAIN CHARACTER
-                    </span>
-
-                    <h2>
-                        Can I afford it?
-                    </h2>
-
-                </div>
-
-                <span class="tag">
-                    No judgement 👀
-                </span>
-
-            </div>
-
-            <p class="description">
-                Thinking of buying something?
-                Check it before the money leaves the chat.
-            </p>
-
-            <div class="checker">
-
-                <input
-                    type="number"
-                    id="checkAmount"
-                    placeholder="₹ amount"
-                    min="1"
-                >
-
-                <button onclick="checkAfford()">
-                    Check
-                </button>
-
-            </div>
-
-            <div
-                id="checkerResult"
-                class="checker-result"
-            ></div>
-
-        </div>
-
-
         <!-- QUICK EXPENSE -->
 
         <div class="card">
@@ -364,13 +318,12 @@
             <div class="goal-bottom">
 
                 <span>
-                    Saved ₹<b id="goalSaved">0</b>
-                </span>
+    Set aside ₹<b id="goalSaved">0</b>
+</span>
 
-                <button onclick="addToGoal()">
-                    + ₹100 saved
-                </button>
-
+<button onclick="addToGoal()">
+    + ₹100 set aside
+</button>
             </div>
 
         </div>
@@ -402,6 +355,35 @@
                 </span>
 
             </div>
+            
+
+<div class="history-controls">
+    <label for="historyFilter">View history</label>
+
+    <select id="historyFilter" onchange="handleHistoryFilterChange()">
+        <option value="all">All Transactions</option>
+        <option value="7days">Last 7 Days</option>
+        <option value="30days">Last 30 Days</option>
+        <option value="custom">Custom Date Range</option>
+    </select>
+</div>
+
+<div class="custom-date-controls" id="customDateControls" hidden>
+    <div class="date-field">
+        <label for="historyStartDate">From date</label>
+        <input type="date" id="historyStartDate">
+    </div>
+
+    <div class="date-field">
+        <label for="historyEndDate">To date</label>
+        <input type="date" id="historyEndDate">
+    </div>
+
+    <button type="button" class="history-apply-btn"
+        onclick="renderTransactions()">
+        Apply
+    </button>
+</div>
 
             <div
                 class="transactions"
